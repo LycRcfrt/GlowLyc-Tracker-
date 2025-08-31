@@ -139,19 +139,23 @@
             grid-column: span 2;
         }
 
-        .expense-list {
-            list-style: none;
+        .history-container {
+            max-height: 200px;
+            overflow-y: auto;
             margin-top: 16px;
+            border: 1px solid var(--secondary-pink);
+            border-radius: 12px;
+            padding: 10px;
         }
 
-        .expense-item {
+        .history-item {
             display: flex;
             justify-content: space-between;
-            padding: 12px;
+            padding: 8px;
             border-bottom: 1px solid var(--secondary-pink);
         }
 
-        .expense-item:last-child {
+        .history-item:last-child {
             border-bottom: none;
         }
 
@@ -169,13 +173,13 @@
 
         .goal-form {
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: 1fr;
             gap: 12px;
             margin-bottom: 20px;
         }
 
         .goal-form input:first-child {
-            grid-column: span 2;
+            grid-column: span 1;
         }
 
         .goal-item {
@@ -224,6 +228,33 @@
             font-size: 0.9rem;
         }
 
+        .tabs {
+            display: flex;
+            margin-bottom: 16px;
+            border-bottom: 2px solid var(--accent-pink);
+        }
+
+        .tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            background: var(--secondary-pink);
+            margin-right: 4px;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .tab.active {
+            background: var(--accent-pink);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
         @media (min-width: 768px) {
             .expense-form {
                 grid-template-columns: 1fr 1fr 1fr auto;
@@ -256,49 +287,68 @@
             <div class="salary-input">
                 <label for="salary-amount">Salary per Cutoff (₱):</label>
                 <input type="number" id="salary-amount" placeholder="Enter amount">
-                <button id="set-salary">Set Salary</button>
+                <button id="set-salary">Add Salary</button>
             </div>
             
-            <div class="summary">
-                <div class="summary-item">
-                    <h3>Total Salary</h3>
-                    <p id="total-salary">₱0.00</p>
+            <div class="tabs">
+                <div class="tab active" data-tab="summary">Summary</div>
+                <div class="tab" data-tab="salary-history">Salary History</div>
+                <div class="tab" data-tab="expense-history">Expense History</div>
+            </div>
+            
+            <div class="tab-content active" id="summary-tab">
+                <div class="summary">
+                    <div class="summary-item">
+                        <h3>Total Salary</h3>
+                        <p id="total-salary">₱0.00</p>
+                    </div>
+                    <div class="summary-item">
+                        <h3>Total Expenses</h3>
+                        <p id="total-expenses">₱0.00</p>
+                    </div>
+                    <div class="summary-item">
+                        <h3>Remaining</h3>
+                        <p id="remaining-budget">₱0.00</p>
+                    </div>
+                    <div class="summary-item">
+                        <h3>Total Saved</h3>
+                        <p id="total-saved">₱0.00</p>
+                    </div>
                 </div>
-                <div class="summary-item">
-                    <h3>Total Expenses</h3>
-                    <p id="total-expenses">₱0.00</p>
+                
+                <h3>Add New Expense</h3>
+                <div class="expense-form">
+                    <select id="expense-category">
+                        <option value="food">🍔 Food</option>
+                        <option value="pamasahe">🚌 Pamasahe</option>
+                        <option value="bills">💡 Bills</option>
+                        <option value="luho">💄 Luho</option>
+                        <option value="savings">💰 Savings</option>
+                    </select>
+                    <input type="number" id="expense-amount" placeholder="Amount">
+                    <input type="date" id="expense-date">
+                    <button id="add-expense">Add Expense</button>
                 </div>
-                <div class="summary-item">
-                    <h3>Remaining</h3>
-                    <p id="remaining-budget">₱0.00</p>
-                </div>
-                <div class="summary-item">
-                    <h3>Total Saved</h3>
-                    <p id="total-saved">₱0.00</p>
+                
+                <h3>Expense Breakdown</h3>
+                <div class="chart-container">
+                    <canvas id="expense-chart"></canvas>
                 </div>
             </div>
             
-            <h3>Add New Expense</h3>
-            <div class="expense-form">
-                <select id="expense-category">
-                    <option value="food">🍔 Food</option>
-                    <option value="pamasahe">🚌 Pamasahe</option>
-                    <option value="bills">💡 Bills</option>
-                    <option value="luho">💄 Luho</option>
-                    <option value="savings">💰 Savings</option>
-                </select>
-                <input type="number" id="expense-amount" placeholder="Amount">
-                <input type="date" id="expense-date">
-                <button id="add-expense">Add Expense</button>
+            <div class="tab-content" id="salary-history-tab">
+                <h3>Salary History</h3>
+                <div class="history-container" id="salary-history-list">
+                    <!-- Salary history will be displayed here -->
+                </div>
             </div>
             
-            <h3>Expense Breakdown</h3>
-            <div class="chart-container">
-                <canvas id="expense-chart"></canvas>
+            <div class="tab-content" id="expense-history-tab">
+                <h3>Expense History</h3>
+                <div class="history-container" id="expense-history-list">
+                    <!-- Expense history will be displayed here -->
+                </div>
             </div>
-            
-            <h3>Recent Expenses</h3>
-            <ul class="expense-list" id="expense-list"></ul>
         </section>
 
         <section id="savings-section">
@@ -339,7 +389,7 @@
 
         // Initialize data
         let budgetData = {
-            salary: 0,
+            salaryHistory: [],
             expenses: [],
             goals: []
         };
@@ -359,11 +409,33 @@
             updateUI();
         }
 
+        // Tab functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs and content
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                this.classList.add('active');
+                
+                // Show corresponding content
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+
         // Set salary
         document.getElementById('set-salary').addEventListener('click', function() {
             const salaryAmount = parseFloat(document.getElementById('salary-amount').value);
             if (!isNaN(salaryAmount) && salaryAmount > 0) {
-                budgetData.salary = salaryAmount;
+                // Add to salary history
+                budgetData.salaryHistory.push({
+                    amount: salaryAmount,
+                    date: new Date().toLocaleDateString(),
+                    timestamp: Date.now()
+                });
+                
                 saveData();
                 document.getElementById('salary-amount').value = '';
             } else {
@@ -395,15 +467,37 @@
         document.getElementById('add-goal').addEventListener('click', function() {
             const name = document.getElementById('goal-name').value;
             const target = parseFloat(document.getElementById('goal-target').value);
-            const deposit = parseFloat(document.getElementById('goal-deposit').value) || 0;
+            const depositAmount = parseFloat(document.getElementById('goal-deposit').value) || 0;
             
             if (name && !isNaN(target) && target > 0) {
+                // Check if we have enough remaining budget for the deposit
+                const totalSalary = budgetData.salaryHistory.reduce((sum, entry) => sum + entry.amount, 0);
+                const totalExpenses = budgetData.expenses.reduce((sum, expense) => sum + expense.amount, 0);
+                const remaining = totalSalary - totalExpenses;
+                
+                if (depositAmount > 0) {
+                    if (depositAmount > remaining) {
+                        alert(`You only have ₱${remaining.toFixed(2)} remaining. Cannot deposit more than your remaining budget.`);
+                        return;
+                    }
+                    
+                    // Add the deposit as an expense
+                    budgetData.expenses.push({
+                        category: 'savings',
+                        amount: depositAmount,
+                        date: new Date().toISOString().split('T')[0],
+                        id: Date.now(),
+                        description: `Deposit to ${name}`
+                    });
+                }
+                
                 budgetData.goals.push({
                     name,
                     target,
-                    current: deposit,
+                    current: depositAmount,
                     id: Date.now() // unique ID
                 });
+                
                 saveData();
                 document.getElementById('goal-name').value = '';
                 document.getElementById('goal-target').value = '';
@@ -417,8 +511,28 @@
         function addDeposit(goalId, amount) {
             const goal = budgetData.goals.find(g => g.id === goalId);
             if (goal && !isNaN(amount) && amount > 0) {
+                // Check if we have enough remaining budget
+                const totalSalary = budgetData.salaryHistory.reduce((sum, entry) => sum + entry.amount, 0);
+                const totalExpenses = budgetData.expenses.reduce((sum, expense) => sum + expense.amount, 0);
+                const remaining = totalSalary - totalExpenses;
+                
+                if (amount > remaining) {
+                    alert(`You only have ₱${remaining.toFixed(2)} remaining. Cannot deposit more than your remaining budget.`);
+                    return;
+                }
+                
                 goal.current += amount;
                 if (goal.current > goal.target) goal.current = goal.target;
+                
+                // Add the deposit as an expense
+                budgetData.expenses.push({
+                    category: 'savings',
+                    amount: amount,
+                    date: new Date().toISOString().split('T')[0],
+                    id: Date.now(),
+                    description: `Deposit to ${goal.name}`
+                });
+                
                 saveData();
             }
         }
@@ -437,15 +551,16 @@
 
         // Update UI with current data
         function updateUI() {
-            // Update salary display
-            document.getElementById('total-salary').textContent = `₱${budgetData.salary.toFixed(2)}`;
+            // Calculate total salary from history
+            const totalSalary = budgetData.salaryHistory.reduce((sum, entry) => sum + entry.amount, 0);
+            document.getElementById('total-salary').textContent = `₱${totalSalary.toFixed(2)}`;
             
             // Calculate expenses
             const totalExpenses = budgetData.expenses.reduce((sum, expense) => sum + expense.amount, 0);
             document.getElementById('total-expenses').textContent = `₱${totalExpenses.toFixed(2)}`;
             
             // Calculate remaining budget
-            const remaining = budgetData.salary - totalExpenses;
+            const remaining = totalSalary - totalExpenses;
             document.getElementById('remaining-budget').textContent = `₱${remaining.toFixed(2)}`;
             
             // Calculate total saved
@@ -457,40 +572,64 @@
             const totalSaved = savingsExpenses + goalsSaved;
             document.getElementById('total-saved').textContent = `₱${totalSaved.toFixed(2)}`;
             
-            // Update expense list
-            const expenseList = document.getElementById('expense-list');
-            expenseList.innerHTML = '';
+            // Update salary history
+            const salaryHistoryList = document.getElementById('salary-history-list');
+            salaryHistoryList.innerHTML = '';
             
-            // Show only recent 5 expenses
-            const recentExpenses = [...budgetData.expenses]
-                .sort((a, b) => new Date(b.date) - new Date(a.date))
-                .slice(0, 5);
-                
-            recentExpenses.forEach(expense => {
-                const li = document.createElement('li');
-                li.className = 'expense-item';
-                
-                const categoryEmoji = {
-                    'food': '🍔',
-                    'pamasahe': '🚌',
-                    'bills': '💡',
-                    'luho': '💄',
-                    'savings': '💰'
-                }[expense.category];
-                
-                li.innerHTML = `
-                    <div class="expense-category">
-                        <span>${categoryEmoji}</span>
-                        <span>${expense.category.charAt(0).toUpperCase() + expense.category.slice(1)}</span>
-                    </div>
-                    <div>₱${expense.amount.toFixed(2)}</div>
-                    <div>${new Date(expense.date).toLocaleDateString()}</div>
-                    <button onclick="deleteExpense(${expense.id})">Delete</button>
-                `;
-                expenseList.appendChild(li);
-            });
+            if (budgetData.salaryHistory.length === 0) {
+                salaryHistoryList.innerHTML = '<p>No salary history yet.</p>';
+            } else {
+                budgetData.salaryHistory
+                    .sort((a, b) => b.timestamp - a.timestamp)
+                    .forEach(entry => {
+                        const div = document.createElement('div');
+                        div.className = 'history-item';
+                        div.innerHTML = `
+                            <div>₱${entry.amount.toFixed(2)}</div>
+                            <div>${entry.date}</div>
+                        `;
+                        salaryHistoryList.appendChild(div);
+                    });
+            }
             
-            // Update chart
+            // Update expense history
+            const expenseHistoryList = document.getElementById('expense-history-list');
+            expenseHistoryList.innerHTML = '';
+            
+            if (budgetData.expenses.length === 0) {
+                expenseHistoryList.innerHTML = '<p>No expenses yet.</p>';
+            } else {
+                budgetData.expenses
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))
+                    .forEach(expense => {
+                        const div = document.createElement('div');
+                        div.className = 'history-item';
+                        
+                        const categoryEmoji = {
+                            'food': '🍔',
+                            'pamasahe': '🚌',
+                            'bills': '💡',
+                            'luho': '💄',
+                            'savings': '💰'
+                        }[expense.category];
+                        
+                        const description = expense.description || 
+                            `${expense.category.charAt(0).toUpperCase() + expense.category.slice(1)}`;
+                            
+                        div.innerHTML = `
+                            <div class="expense-category">
+                                <span>${categoryEmoji}</span>
+                                <span>${description}</span>
+                            </div>
+                            <div>₱${expense.amount.toFixed(2)}</div>
+                            <div>${new Date(expense.date).toLocaleDateString()}</div>
+                            <button onclick="deleteExpense(${expense.id})">Delete</button>
+                        `;
+                        expenseHistoryList.appendChild(div);
+                    });
+            }
+
+// Update chart
             updateChart();
             
             // Update goals
@@ -553,7 +692,8 @@
             });
         }
 
-        // Update goals display
+
+// Update goals display
         function updateGoals() {
             const goalsContainer = document.getElementById('goals-container');
             goalsContainer.innerHTML = '';
@@ -582,11 +722,10 @@
                     </div>
                     <div class="goal-actions">
                         <input type="number" id="deposit-${goal.id}" placeholder="Deposit amount">
-                        <button onclick="addDeposit(${goal.id}, parseFloat(document.getElementById('deposit-${goal.id}').value))">Add Deposit</button>
+                        <button onclick="addDeposit(${goal.id}, parseFloat(document.getElementById('deposit-${goal.id}').value || 0))">Add Deposit</button>
                         <button onclick="deleteGoal(${goal.id})" style="background-color: #ff6b6b;">Delete</button>
                     </div>
                 `;
-                
                 goalsContainer.appendChild(goalElement);
             });
         }
@@ -595,10 +734,13 @@
         function initApp() {
             showRandomQuote();
             loadData();
+            
+            // Set default date to today
+            document.getElementById('expense-date').valueAsDate = new Date();
         }
 
-        // Run the app when page loads
-        window.onload = initApp;
+        // Run the app
+        initApp();
     </script>
 </body>
 </html>
