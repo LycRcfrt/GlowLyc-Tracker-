@@ -75,14 +75,13 @@
             gap: 8px;
         }
 
-        .salary-input {
-            display: flex;
-            flex-direction: column;
+        .salary-input, .expense-form, .goal-form {
+            display: grid;
             gap: 12px;
             margin-bottom: 20px;
         }
 
-        input, select, button {
+        input, select, button, textarea {
             padding: 12px 16px;
             border-radius: 12px;
             border: 2px solid var(--accent-pink);
@@ -128,34 +127,19 @@
             font-weight: bold;
         }
 
-        .expense-form {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .expense-form button {
-            grid-column: span 2;
-        }
-
-        .history-container {
-            max-height: 200px;
-            overflow-y: auto;
+        .expense-list, .history-list {
+            list-style: none;
             margin-top: 16px;
-            border: 1px solid var(--secondary-pink);
-            border-radius: 12px;
-            padding: 10px;
         }
 
-        .history-item {
+        .expense-item, .history-item {
             display: flex;
             justify-content: space-between;
-            padding: 8px;
+            padding: 12px;
             border-bottom: 1px solid var(--secondary-pink);
         }
 
-        .history-item:last-child {
+        .expense-item:last-child, .history-item:last-child {
             border-bottom: none;
         }
 
@@ -169,17 +153,6 @@
             position: relative;
             height: 250px;
             margin-top: 20px;
-        }
-
-        .goal-form {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .goal-form input:first-child {
-            grid-column: span 1;
         }
 
         .goal-item {
@@ -235,10 +208,10 @@
         }
 
         .tab {
-            padding: 8px 16px;
+            padding: 10px 20px;
             cursor: pointer;
             background: var(--secondary-pink);
-            margin-right: 4px;
+            margin-right: 5px;
             border-radius: 8px 8px 0 0;
         }
 
@@ -256,26 +229,18 @@
         }
 
         @media (min-width: 768px) {
-            .expense-form {
-                grid-template-columns: 1fr 1fr 1fr auto;
-            }
-            
-            .expense-form button {
-                grid-column: auto;
+            .salary-input, .expense-form {
+                grid-template-columns: 1fr 1fr auto;
             }
             
             .goal-form {
                 grid-template-columns: 2fr 1fr 1fr auto;
             }
-            
-            .goal-form input:first-child {
-                grid-column: auto;
-            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+        <div class="container">
         <header>
             <h1>🌸 Personal Budget & Savings Tracker</h1>
             <div class="quote" id="motivational-quote">Future You will thank you 🌸</div>
@@ -284,39 +249,24 @@
         <section id="budget-section">
             <h2>📊 Budget & Expense Tracker</h2>
             
-            <div class="salary-input">
-                <label for="salary-amount">Salary per Cutoff (₱):</label>
-                <input type="number" id="salary-amount" placeholder="Enter amount">
-                <button id="set-salary">Add Salary</button>
-            </div>
-            
             <div class="tabs">
-                <div class="tab active" data-tab="summary">Summary</div>
-                <div class="tab" data-tab="salary-history">Salary History</div>
-                <div class="tab" data-tab="expense-history">Expense History</div>
+                <div class="tab active" data-tab="salary">Salary</div>
+                <div class="tab" data-tab="expenses">Expenses</div>
+                <div class="tab" data-tab="history">History</div>
             </div>
             
-            <div class="tab-content active" id="summary-tab">
-                <div class="summary">
-                    <div class="summary-item">
-                        <h3>Total Salary</h3>
-                        <p id="total-salary">₱0.00</p>
-                    </div>
-                    <div class="summary-item">
-                        <h3>Total Expenses</h3>
-                        <p id="total-expenses">₱0.00</p>
-                    </div>
-                    <div class="summary-item">
-                        <h3>Remaining</h3>
-                        <p id="remaining-budget">₱0.00</p>
-                    </div>
-                    <div class="summary-item">
-                        <h3>Total Saved</h3>
-                        <p id="total-saved">₱0.00</p>
-                    </div>
+            <div class="tab-content active" id="salary-tab">
+                <div class="salary-input">
+                    <input type="number" id="salary-amount" placeholder="Salary per Cutoff (₱)">
+                    <input type="date" id="salary-date">
+                    <button id="set-salary">Add Salary</button>
                 </div>
                 
-                <h3>Add New Expense</h3>
+                <h3>Salary History</h3>
+                <ul class="history-list" id="salary-history"></ul>
+            </div>
+            
+            <div class="tab-content" id="expenses-tab">
                 <div class="expense-form">
                     <select id="expense-category">
                         <option value="food">🍔 Food</option>
@@ -326,28 +276,40 @@
                         <option value="savings">💰 Savings</option>
                     </select>
                     <input type="number" id="expense-amount" placeholder="Amount">
-                    <input type="date" id="expense-date">
                     <button id="add-expense">Add Expense</button>
                 </div>
                 
-                <h3>Expense Breakdown</h3>
-                <div class="chart-container">
-                    <canvas id="expense-chart"></canvas>
+                <h3>Recent Expenses</h3>
+                <ul class="expense-list" id="expense-list"></ul>
+            </div>
+            
+            <div class="tab-content" id="history-tab">
+                <h3>Transaction History</h3>
+                <ul class="history-list" id="transaction-history"></ul>
+            </div>
+            
+            <div class="summary">
+                <div class="summary-item">
+                    <h3>Total Salary</h3>
+                    <p id="total-salary">₱0.00</p>
+                </div>
+                <div class="summary-item">
+                    <h3>Total Expenses</h3>
+                    <p id="total-expenses">₱0.00</p>
+                </div>
+                <div class="summary-item">
+                    <h3>Remaining</h3>
+                    <p id="remaining-budget">₱0.00</p>
+                </div>
+                <div class="summary-item">
+                    <h3>Total Saved</h3>
+                    <p id="total-saved">₱0.00</p>
                 </div>
             </div>
             
-            <div class="tab-content" id="salary-history-tab">
-                <h3>Salary History</h3>
-                <div class="history-container" id="salary-history-list">
-                    <!-- Salary history will be displayed here -->
-                </div>
-            </div>
-            
-            <div class="tab-content" id="expense-history-tab">
-                <h3>Expense History</h3>
-                <div class="history-container" id="expense-history-list">
-                    <!-- Expense history will be displayed here -->
-                </div>
+            <h3>Expense Breakdown</h3>
+            <div class="chart-container">
+                <canvas id="expense-chart"></canvas>
             </div>
         </section>
 
@@ -387,247 +349,529 @@
         // Initialize Chart.js
         let expenseChart = null;
 
-        // Initialize data
+        // Database setup
+        let db;
+        const DB_NAME = 'BudgetTrackerDB';
+        const DB_VERSION = 1;
+        
+        // Object store names
+        const SALARY_STORE = 'salaries';
+        const EXPENSE_STORE = 'expenses';
+        const GOAL_STORE = 'goals';
+        const HISTORY_STORE = 'history';
+
+        // Initialize database
+        function initDatabase() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                
+                request.onerror = event => {
+                    console.error('Database error:', event.target.error);
+                    reject(event.target.error);
+                };
+                
+                request.onupgradeneeded = event => {
+                    db = event.target.result;
+                    
+                    // Create object stores if they don't exist
+                    if (!db.objectStoreNames.contains(SALARY_STORE)) {
+                        db.createObjectStore(SALARY_STORE, { keyPath: 'id', autoIncrement: true });
+                    }
+                    
+                    if (!db.objectStoreNames.contains(EXPENSE_STORE)) {
+                        db.createObjectStore(EXPENSE_STORE, { keyPath: 'id', autoIncrement: true });
+                    }
+                    
+                    if (!db.objectStoreNames.contains(GOAL_STORE)) {
+                        db.createObjectStore(GOAL_STORE, { keyPath: 'id', autoIncrement: true });
+                    }
+                    
+                    if (!db.objectStoreNames.contains(HISTORY_STORE)) {
+                        db.createObjectStore(HISTORY_STORE, { keyPath: 'id', autoIncrement: true });
+                    }
+                };
+                
+                request.onsuccess = event => {
+                    db = event.target.result;
+                    resolve(db);
+                };
+            });
+        }
+        
+        // Add data to a store
+        function addData(storeName, data) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([storeName], 'readwrite');
+                const store = transaction.objectStore(storeName);
+                const request = store.add(data);
+                
+                request.onerror = event => reject(event.target.error);
+                request.onsuccess = event => resolve(event.target.result);
+            });
+        }
+
+        // Get all data from a store
+        function getAllData(storeName) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([storeName], 'readonly');
+                const store = transaction.objectStore(storeName);
+                const request = store.getAll();
+                
+                request.onerror = event => reject(event.target.error);
+                request.onsuccess = event => resolve(event.target.result);
+            });
+        }
+
+        // Update data in a store
+        function updateData(storeName, id, data) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([storeName], 'readwrite');
+                const store = transaction.objectStore(storeName);
+                const request = store.put({ ...data, id });
+                
+                request.onerror = event => reject(event.target.error);
+                request.onsuccess = event => resolve(event.target.result);
+            });
+        }
+
+        // Delete data from a store
+        function deleteData(storeName, id) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([storeName], 'readwrite');
+                const store = transaction.objectStore(storeName);
+                const request = store.delete(id);
+                
+                request.onerror = event => reject(event.target.error);
+                request.onsuccess = event => resolve(event.target.result);
+            });
+        }
+
+        // Initialize the application
+        async function initApp() {
+            try {
+                await initDatabase();
+                loadData();
+                setupEventListeners();
+                showRandomQuote();
+            } catch (error) {
+                console.error('Failed to initialize app:', error);
+                alert('Failed to initialize the application. Please refresh the page.');
+            }
+        }
+
+        // Global data
         let budgetData = {
-            salaryHistory: [],
+            salaries: [],
             expenses: [],
-            goals: []
+            goals: [],
+            history: []
         };
 
-        // Load data from localStorage
-        function loadData() {
-            const savedData = localStorage.getItem('budgetData');
-            if (savedData) {
-                budgetData = JSON.parse(savedData);
+        // Load data from database
+        async function loadData() {
+            try {
+                budgetData.salaries = await getAllData(SALARY_STORE);
+                budgetData.expenses = await getAllData(EXPENSE_STORE);
+                budgetData.goals = await getAllData(GOAL_STORE);
+                budgetData.history = await getAllData(HISTORY_STORE);
+                
+                updateUI();
+            } catch (error) {
+                console.error('Error loading data:', error);
             }
-            updateUI();
         }
 
-        // Save data to localStorage
-        function saveData() {
-            localStorage.setItem('budgetData', JSON.stringify(budgetData));
-            updateUI();
-        }
-
-        // Tab functionality
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                // Remove active class from all tabs and content
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                
-                // Add active class to clicked tab
-                this.classList.add('active');
-                
-                // Show corresponding content
-                const tabId = this.getAttribute('data-tab');
-                document.getElementById(`${tabId}-tab`).classList.add('active');
-            });
-        });
-
-        // Set salary
-        document.getElementById('set-salary').addEventListener('click', function() {
-            const salaryAmount = parseFloat(document.getElementById('salary-amount').value);
-            if (!isNaN(salaryAmount) && salaryAmount > 0) {
-                // Add to salary history
-                budgetData.salaryHistory.push({
-                    amount: salaryAmount,
-                    date: new Date().toLocaleDateString(),
-                    timestamp: Date.now()
+        // Set up event listeners
+        function setupEventListeners() {
+            // Set salary
+            document.getElementById('set-salary').addEventListener('click', addSalary);
+            
+            // Add expense
+            document.getElementById('add-expense').addEventListener('click', addExpense);
+            
+            // Add goal
+            document.getElementById('add-goal').addEventListener('click', addGoal);
+            
+            // Tab switching
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Remove active class from all tabs and contents
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked tab and corresponding content
+                    tab.classList.add('active');
+                    const tabName = tab.getAttribute('data-tab');
+                    document.getElementById(`${tabName}-tab`).classList.add('active');
                 });
-                
-                saveData();
-                document.getElementById('salary-amount').value = '';
+            });
+        }
+
+        // Add salary
+        async function addSalary() {
+            const amount = parseFloat(document.getElementById('salary-amount').value);
+            const date = document.getElementById('salary-date').value || new Date().toISOString().split('T')[0];
+            
+            if (!isNaN(amount) && amount > 0) {
+                try {
+                    const salaryData = {
+                        amount,
+                        date,
+                        timestamp: new Date()
+                    };
+                    
+                    // Add to database
+                    await addData(SALARY_STORE, salaryData);
+                    
+                    // Add to history
+                    await addData(HISTORY_STORE, {
+                        type: 'salary',
+                        description: `Salary: ₱${amount.toFixed(2)}`,
+                        amount: amount,
+                        date: new Date(),
+                        timestamp: new Date()
+                    });
+                    
+                    // Reload data and update UI
+                    await loadData();
+                    
+                    // Clear input fields
+                    document.getElementById('salary-amount').value = '';
+                    
+                } catch (error) {
+                    console.error('Error adding salary:', error);
+                    alert('Failed to add salary. Please try again.');
+                }
             } else {
                 alert('Please enter a valid salary amount.');
             }
-        });
+        }
 
-        // Add expense
-        document.getElementById('add-expense').addEventListener('click', function() {
+      // Add expense
+        async function addExpense() {
             const category = document.getElementById('expense-category').value;
             const amount = parseFloat(document.getElementById('expense-amount').value);
-            const date = document.getElementById('expense-date').value || new Date().toISOString().split('T')[0];
+            const date = new Date().toISOString().split('T')[0];
             
             if (!isNaN(amount) && amount > 0) {
-                budgetData.expenses.push({
-                    category,
-                    amount,
-                    date,
-                    id: Date.now() // unique ID
-                });
-                saveData();
-                document.getElementById('expense-amount').value = '';
+                try {
+                    const expenseData = {
+                        category,
+                        amount,
+                        date,
+                        timestamp: new Date()
+                    };
+                    
+                    // Add to database
+                    await addData(EXPENSE_STORE, expenseData);
+                    
+                  // Add to history
+                    await addData(HISTORY_STORE, {
+                        type: 'salary',
+                        description: `Salary: ₱${amount.toFixed(2)}`,
+                        amount: amount,
+                        date: new Date(),
+                        timestamp: new Date()
+                    });
+                    
+                    // Reload data and update UI
+                    await loadData();
+                    
+                    // Clear input fields
+                    document.getElementById('salary-amount').value = '';
+                    
+                } catch (error) {
+                    console.error('Error adding salary:', error);
+                    alert('Failed to add salary. Please try again.');
+                }
+            } else {
+                alert('Please enter a valid salary amount.');
+            }
+        }
+
+      // Add expense
+        async function addExpense() {
+            const category = document.getElementById('expense-category').value;
+            const amount = parseFloat(document.getElementById('expense-amount').value);
+            const date = new Date().toISOString().split('T')[0];
+            
+            if (!isNaN(amount) && amount > 0) {
+                try {
+                    const expenseData = {
+                        category,
+                        amount,
+                        date,
+                        timestamp: new Date()
+                    };
+                    
+                    // Add to database
+                    await addData(EXPENSE_STORE, expenseData);
+                    
+                    // Add to history
+                    await addData(HISTORY_STORE, {
+                        type: 'expense',
+                        description: `${category.charAt(0).toUpperCase() + category.slice(1)}: ₱${amount.toFixed(2)}`,
+                        amount: -amount,
+                        date: new Date(),
+                        timestamp: new Date()
+                    });
+                    
+                    // If it's a savings deposit, handle accordingly
+                    if (category === 'savings') {
+                        // You could automatically add this to a savings goal here
+                    }
+                    
+                    // Reload data and update UI
+                    await loadData();
+                    
+                    // Clear input field
+                    document.getElementById('expense-amount').value = '';
+                    
+                } catch (error) {
+                    console.error('Error adding expense:', error);
+                    alert('Failed to add expense. Please try again.');
+                }
             } else {
                 alert('Please enter a valid expense amount.');
             }
-        });
+        }
 
         // Add goal
-        document.getElementById('add-goal').addEventListener('click', function() {
+        async function addGoal() {
             const name = document.getElementById('goal-name').value;
             const target = parseFloat(document.getElementById('goal-target').value);
-            const depositAmount = parseFloat(document.getElementById('goal-deposit').value) || 0;
+            const deposit = parseFloat(document.getElementById('goal-deposit').value) || 0;
             
             if (name && !isNaN(target) && target > 0) {
-                // Check if we have enough remaining budget for the deposit
-                const totalSalary = budgetData.salaryHistory.reduce((sum, entry) => sum + entry.amount, 0);
-                const totalExpenses = budgetData.expenses.reduce((sum, expense) => sum + expense.amount, 0);
-                const remaining = totalSalary - totalExpenses;
-                
-                if (depositAmount > 0) {
-                    if (depositAmount > remaining) {
-                        alert(`You only have ₱${remaining.toFixed(2)} remaining. Cannot deposit more than your remaining budget.`);
-                        return;
+                try {
+                    const goalData = {
+                        name,
+                        target,
+                        current: deposit,
+                        createdAt: new Date()
+                    };
+                    
+                    // Add to database
+                    await addData(GOAL_STORE, goalData);
+                    
+                    // If there's an initial deposit, handle it
+                    if (deposit > 0) {
+                        // Add expense for the savings deposit
+                        const expenseData = {
+                            category: 'savings',
+                            amount: deposit,
+                            date: new Date().toISOString().split('T')[0],
+                            timestamp: new Date(),
+                            relatedGoal: name
+                        };
+                        
+                        await addData(EXPENSE_STORE, expenseData);
+                        
+                        // Add to history
+                        await addData(HISTORY_STORE, {
+                            type: 'savings_deposit',
+                            description: `Savings deposit for ${name}: ₱${deposit.toFixed(2)}`,
+                            amount: -deposit,
+                            date: new Date(),
+                            timestamp: new Date()
+                        });
                     }
                     
-                    // Add the deposit as an expense
-                    budgetData.expenses.push({
-                        category: 'savings',
-                        amount: depositAmount,
-                        date: new Date().toISOString().split('T')[0],
-                        id: Date.now(),
-                        description: `Deposit to ${name}`
-                    });
+                    // Reload data and update UI
+                    await loadData();
+                    
+                    // Clear input fields
+                    document.getElementById('goal-name').value = '';
+                    document.getElementById('goal-target').value = '';
+                    document.getElementById('goal-deposit').value = '';
+                    
+                } catch (error) {
+                    console.error('Error adding goal:', error);
+                    alert('Failed to add goal. Please try again.');
                 }
-                
-                budgetData.goals.push({
-                    name,
-                    target,
-                    current: depositAmount,
-                    id: Date.now() // unique ID
-                });
-                
-                saveData();
-                document.getElementById('goal-name').value = '';
-                document.getElementById('goal-target').value = '';
-                document.getElementById('goal-deposit').value = '';
             } else {
                 alert('Please enter a valid goal name and target amount.');
             }
-        });
+        }
 
         // Add deposit to goal
-        function addDeposit(goalId, amount) {
-            const goal = budgetData.goals.find(g => g.id === goalId);
-            if (goal && !isNaN(amount) && amount > 0) {
-                // Check if we have enough remaining budget
-                const totalSalary = budgetData.salaryHistory.reduce((sum, entry) => sum + entry.amount, 0);
-                const totalExpenses = budgetData.expenses.reduce((sum, expense) => sum + expense.amount, 0);
-                const remaining = totalSalary - totalExpenses;
-                
-                if (amount > remaining) {
-                    alert(`You only have ₱${remaining.toFixed(2)} remaining. Cannot deposit more than your remaining budget.`);
-                    return;
+        async function addDeposit(goalId, amountInputId) {
+            const amount = parseFloat(document.getElementById(amountInputId).value);
+            
+            if (!isNaN(amount) && amount > 0) {
+                try {
+                    const goal = budgetData.goals.find(g => g.id === goalId);
+                    
+                    if (goal) {
+                        // Update goal
+                        goal.current += amount;
+                        if (goal.current > goal.target) goal.current = goal.target;
+                        
+                        await updateData(GOAL_STORE, goalId, goal);
+                        
+                        // Add expense for the savings deposit
+                        const expenseData = {
+                            category: 'savings',
+                            amount: amount,
+                            date: new Date().toISOString().split('T')[0],
+                            timestamp: new Date(),
+                            relatedGoal: goal.name
+                        };
+                        
+                        await addData(EXPENSE_STORE, expenseData);
+                        
+                        // Add to history
+                        await addData(HISTORY_STORE, {
+                            type: 'savings_deposit',
+                            description: `Savings deposit for ${goal.name}: ₱${amount.toFixed(2)}`,
+                            amount: -amount,
+                            date: new Date(),
+                            timestamp: new Date()
+                        });
+                        
+                        // Reload data and update UI
+                        await loadData();
+                        
+                        // Clear input field
+                        document.getElementById(amountInputId).value = '';
+                    }
+                } catch (error) {
+                    console.error('Error adding deposit:', error);
+                    alert('Failed to add deposit. Please try again.');
                 }
-                
-                goal.current += amount;
-                if (goal.current > goal.target) goal.current = goal.target;
-                
-                // Add the deposit as an expense
-                budgetData.expenses.push({
-                    category: 'savings',
-                    amount: amount,
-                    date: new Date().toISOString().split('T')[0],
-                    id: Date.now(),
-                    description: `Deposit to ${goal.name}`
-                });
-                
-                saveData();
+            } else {
+                alert('Please enter a valid deposit amount.');
             }
         }
 
         // Delete goal
-        function deleteGoal(goalId) {
-            budgetData.goals = budgetData.goals.filter(g => g.id !== goalId);
-            saveData();
+        async function deleteGoal(goalId) {
+            if (confirm('Are you sure you want to delete this goal?')) {
+                try {
+                    await deleteData(GOAL_STORE, goalId);
+                    await loadData();
+                } catch (error) {
+                    console.error('Error deleting goal:', error);
+                    alert('Failed to delete goal. Please try again.');
+                }
+            }
         }
 
         // Delete expense
-        function deleteExpense(expenseId) {
-            budgetData.expenses = budgetData.expenses.filter(e => e.id !== expenseId);
-            saveData();
+        async function deleteExpense(expenseId) {
+            if (confirm('Are you sure you want to delete this expense?')) {
+                try {
+                    await deleteData(EXPENSE_STORE, expenseId);
+                    
+                    // Add to history
+                    const expense = budgetData.expenses.find(e => e.id === expenseId);
+                    if (expense) {
+                        await addData(HISTORY_STORE, {
+                            type: 'expense_deleted',
+                            description: `Deleted expense: ${expense.category} - ₱${expense.amount.toFixed(2)}`,
+                            amount: expense.amount, // Adding back the amount since it's a deletion
+                            date: new Date(),
+                            timestamp: new Date()
+                        });
+                    }
+                    
+                    await loadData();
+                } catch (error) {
+                    console.error('Error deleting expense:', error);
+                    alert('Failed to delete expense. Please try again.');
+                }
+            }
         }
 
         // Update UI with current data
         function updateUI() {
-            // Calculate total salary from history
-            const totalSalary = budgetData.salaryHistory.reduce((sum, entry) => sum + entry.amount, 0);
-            document.getElementById('total-salary').textContent = `₱${totalSalary.toFixed(2)}`;
-            
-            // Calculate expenses
+            // Calculate totals
+            const totalSalary = budgetData.salaries.reduce((sum, salary) => sum + salary.amount, 0);
             const totalExpenses = budgetData.expenses.reduce((sum, expense) => sum + expense.amount, 0);
-            document.getElementById('total-expenses').textContent = `₱${totalExpenses.toFixed(2)}`;
-            
-            // Calculate remaining budget
             const remaining = totalSalary - totalExpenses;
-            document.getElementById('remaining-budget').textContent = `₱${remaining.toFixed(2)}`;
             
-            // Calculate total saved
+            // Calculate total saved (savings expenses + goal deposits)
             const savingsExpenses = budgetData.expenses
                 .filter(e => e.category === 'savings')
                 .reduce((sum, expense) => sum + expense.amount, 0);
                 
             const goalsSaved = budgetData.goals.reduce((sum, goal) => sum + goal.current, 0);
             const totalSaved = savingsExpenses + goalsSaved;
+            
+            // Update display
+            document.getElementById('total-salary').textContent = `₱${totalSalary.toFixed(2)}`;
+            document.getElementById('total-expenses').textContent = `₱${totalExpenses.toFixed(2)}`;
+            document.getElementById('remaining-budget').textContent = `₱${remaining.toFixed(2)}`;
             document.getElementById('total-saved').textContent = `₱${totalSaved.toFixed(2)}`;
             
             // Update salary history
-            const salaryHistoryList = document.getElementById('salary-history-list');
-            salaryHistoryList.innerHTML = '';
+            const salaryHistory = document.getElementById('salary-history');
+            salaryHistory.innerHTML = '';
             
-            if (budgetData.salaryHistory.length === 0) {
-                salaryHistoryList.innerHTML = '<p>No salary history yet.</p>';
-            } else {
-                budgetData.salaryHistory
-                    .sort((a, b) => b.timestamp - a.timestamp)
-                    .forEach(entry => {
-                        const div = document.createElement('div');
-                        div.className = 'history-item';
-                        div.innerHTML = `
-                            <div>₱${entry.amount.toFixed(2)}</div>
-                            <div>${entry.date}</div>
-                        `;
-                        salaryHistoryList.appendChild(div);
-                    });
-            }
+            budgetData.salaries
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .forEach(salary => {
+                    const li = document.createElement('li');
+                    li.className = 'history-item';
+                    li.innerHTML = `
+                        <div>${new Date(salary.date).toLocaleDateString()}</div>
+                        <div>₱${salary.amount.toFixed(2)}</div>
+                    `;
+                    salaryHistory.appendChild(li);
+                });
             
-            // Update expense history
-            const expenseHistoryList = document.getElementById('expense-history-list');
-            expenseHistoryList.innerHTML = '';
+            // Update expense list
+            const expenseList = document.getElementById('expense-list');
+            expenseList.innerHTML = '';
             
-            if (budgetData.expenses.length === 0) {
-                expenseHistoryList.innerHTML = '<p>No expenses yet.</p>';
-            } else {
-                budgetData.expenses
-                    .sort((a, b) => new Date(b.date) - new Date(a.date))
-                    .forEach(expense => {
-                        const div = document.createElement('div');
-                        div.className = 'history-item';
-                        
-                        const categoryEmoji = {
-                            'food': '🍔',
-                            'pamasahe': '🚌',
-                            'bills': '💡',
-                            'luho': '💄',
-                            'savings': '💰'
-                        }[expense.category];
-                        
-                        const description = expense.description || 
-                            `${expense.category.charAt(0).toUpperCase() + expense.category.slice(1)}`;
-                            
-                        div.innerHTML = `
-                            <div class="expense-category">
-                                <span>${categoryEmoji}</span>
-                                <span>${description}</span>
-                            </div>
-                            <div>₱${expense.amount.toFixed(2)}</div>
-                            <div>${new Date(expense.date).toLocaleDateString()}</div>
-                            <button onclick="deleteExpense(${expense.id})">Delete</button>
-                        `;
-                        expenseHistoryList.appendChild(div);
-                    });
-            }
+            budgetData.expenses
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 5)
+                .forEach(expense => {
+                    const li = document.createElement('li');
+                    li.className = 'expense-item';
+                    
+                    const categoryEmoji = {
+                        'food': '🍔',
+                        'pamasahe': '🚌',
+                        'bills': '💡',
+                        'luho': '💄',
+                        'savings': '💰'
+                    }[expense.category];
+                    
+                    li.innerHTML = `
+                        <div class="expense-category">
+                            <span>${categoryEmoji}</span>
+                            <span>${expense.category.charAt(0).toUpperCase() + expense.category.slice(1)}</span>
+                        </div>
+                        <div>₱${expense.amount.toFixed(2)}</div>
+                        <div>${new Date(expense.date).toLocaleDateString()}</div>
+                        <button onclick="deleteExpense(${expense.id})">Delete</button>
+                    `;
+                    expenseList.appendChild(li);
+                });
+            
+                        // Update transaction history
+            const transactionHistory = document.getElementById('transaction-history');
+            transactionHistory.innerHTML = '';
+            
+            budgetData.history
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                .forEach(record => {
+                    const li = document.createElement('li');
+                    li.className = 'history-item';
+                    
+                    const sign = record.amount > 0 ? '+' : '';
+                    const amountClass = record.amount > 0 ? 'style="color:green;"' : 'style="color:red;"';
+                    
+                    li.innerHTML = `
+                        <div>${new Date(record.timestamp).toLocaleDateString()}</div>
+                        <div>${record.description}</div>
+                        <div ${amountClass}>${sign}₱${Math.abs(record.amount).toFixed(2)}</div>
+                    `;
+                    transactionHistory.appendChild(li);
+                });
+
 
 // Update chart
             updateChart();
@@ -692,8 +936,7 @@
             });
         }
 
-
-// Update goals display
+        // Update goals display
         function updateGoals() {
             const goalsContainer = document.getElementById('goals-container');
             goalsContainer.innerHTML = '';
@@ -722,7 +965,7 @@
                     </div>
                     <div class="goal-actions">
                         <input type="number" id="deposit-${goal.id}" placeholder="Deposit amount">
-                        <button onclick="addDeposit(${goal.id}, parseFloat(document.getElementById('deposit-${goal.id}').value || 0))">Add Deposit</button>
+                        <button onclick="addDeposit(${goal.id}, 'deposit-${goal.id}')">Add Deposit</button>
                         <button onclick="deleteGoal(${goal.id})" style="background-color: #ff6b6b;">Delete</button>
                     </div>
                 `;
@@ -730,17 +973,8 @@
             });
         }
 
-        // Initialize the app
-        function initApp() {
-            showRandomQuote();
-            loadData();
-            
-            // Set default date to today
-            document.getElementById('expense-date').valueAsDate = new Date();
-        }
-
-        // Run the app
-        initApp();
+        // Initialize the app when the page loads
+        window.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
