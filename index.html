@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌸 Budget & Savings Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-pink: #ffd6e7;
+            --secondary-pink: #ffefef;
+            --accent-pink: #ffb6c1;
+            --text-color: #5a3d5c;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--primary-pink);
+            color: var(--text-color);
+            padding: 16px;
+            min-height: 100vh;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffb6c1' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 16px;
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+
+        .quote {
+            font-style: italic;
+            margin: 12px 0;
+            padding: 12px;
+            background-color: var(--secondary-pink);
+            border-radius: 12px;
+            font-size: 0.9rem;
+        }
+
+        section {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .salary-input {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        input, select, button {
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 2px solid var(--accent-pink);
+            background-color: white;
+            font-size: 1rem;
+        }
+
+        button {
+            background-color: var(--accent-pink);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background-color: #ff91a4;
+            transform: translateY(-2px);
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .summary-item {
+            background-color: var(--secondary-pink);
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .summary-item h3 {
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+
+        .summary-item p {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .expense-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .expense-form button {
+            grid-column: span 2;
+        }
+
+        .expense-list {
+            list-style: none;
+            margin-top: 16px;
+        }
+
+        .expense-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            border-bottom: 1px solid var(--secondary-pink);
+        }
+
+        .expense-item:last-child {
+            border-bottom: none;
+        }
+
+        .expense-category {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 250px;
+            margin-top: 20px;
+        }
+
+        .goal-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .goal-form input:first-child {
+            grid-column: span 2;
+        }
+
+        .goal-item {
+            background-color: var(--secondary-pink);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .progress-bar {
+            height: 20px;
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--accent-pink);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .goal-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+        }
+
+        .goal-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .goal-actions button {
+            flex: 1;
+            padding: 8px;
+            font-size: 0.9rem;
+        }
+
+        @media (min-width: 768px) {
+            .expense-form {
+                grid-template-columns: 1fr 1fr 1fr auto;
+            }
+            
+            .expense-form button {
+                grid-column: auto;
+            }
+            
+            .goal-form {
+                grid-template-columns: 2fr 1fr 1fr auto;
+            }
+            
+            .goal-form input:first-child {
+                grid-column: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌸 Personal Budget & Savings Tracker</h1>
+            <div class="quote" id="motivational-quote">Future You will thank you 🌸</div>
+        </header>
+
+        <section id="budget-section">
+            <h2>📊 Budget & Expense Tracker</h2>
+            
+            <div class="salary-input">
+                <label for="salary-amount">Salary per Cutoff (₱):</label>
+                <input type="number" id="salary-amount" placeholder="Enter amount">
+                <button id="set-salary">Set Salary</button>
+            </div>
+            
+            <div class="summary">
+                <div class="summary-item">
+                    <h3>Total Salary</h3>
+                    <p id="total-salary">₱0.00</p>
+                </div>
+                <div class="summary-item">
+                    <h3>Total Expenses</h3>
+                    <p id="total-expenses">₱0.00</p>
+                </div>
+                <div class="summary-item">
+                    <h3>Remaining</h3>
+                    <p id="remaining-budget">₱0.00</p>
+                </div>
+                <div class="summary-item">
+                    <h3>Total Saved</h3>
+                    <p id="total-saved">₱0.00</p>
+                </div>
+            </div>
+            
+            <h3>Add New Expense</h3>
+            <div class="expense-form">
+                <select id="expense-category">
+                    <option value="food">🍔 Food</option>
+                    <option value="pamasahe">🚌 Pamasahe</option>
+                    <option value="bills">💡 Bills</option>
+                    <option value="luho">💄 Luho</option>
+                    <option value="savings">💰 Savings</option>
+                </select>
+                <input type="number" id="expense-amount" placeholder="Amount">
+                <input type="date" id="expense-date">
+                <button id="add-expense">Add Expense</button>
+            </div>
+            
+            <h3>Expense Breakdown</h3>
+            <div class="chart-container">
+                <canvas id="expense-chart"></canvas>
+            </div>
+            
+            <h3>Recent Expenses</h3>
+            <ul class="expense-list" id="expense-list"></ul>
+        </section>
+
+        <section id="savings-section">
+            <h2>💖 Savings Goal Tracker</h2>
+            
+            <div class="goal-form">
+                <input type="text" id="goal-name" placeholder="Goal Name (e.g., Japan Trip 2026)">
+                <input type="number" id="goal-target" placeholder="Target Amount">
+                <input type="number" id="goal-deposit" placeholder="Deposit Amount">
+                <button id="add-goal">Add Goal</button>
+            </div>
+            
+            <div id="goals-container"></div>
+        </section>
+    </div>
+
+    <script>
+        // Motivational quotes array
+        const motivationalQuotes = [
+            "Future You will thank you 🌸",
+            "Small savings grow into big dreams 🌼",
+            "Every peso brings you closer to your goal ✨",
+            "Financial freedom starts with today's choices 🌺",
+            "You're doing amazing, sweetie! 🌷",
+            "Progress, not perfection 🌻",
+            "Your dreams are worth saving for 💐",
+            "One step at a time, you've got this! 🌹"
+        ];
+
+        // Display random quote
+        function showRandomQuote() {
+            const randomIndex = Math.floor(Math.random() * motivationalQuotes.length);
+            document.getElementById('motivational-quote').textContent = motivationalQuotes[randomIndex];
+        }
+
+        // Initialize Chart.js
+        let expenseChart = null;
+
+        // Initialize data
+        let budgetData = {
+            salary: 0,
+            expenses: [],
+            goals: []
+        };
+
+        // Load data from localStorage
+        function loadData() {
+            const savedData = localStorage.getItem('budgetData');
+            if (savedData) {
+                budgetData = JSON.parse(savedData);
+            }
+            updateUI();
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('budgetData', JSON.stringify(budgetData));
+            updateUI();
+        }
+
+        // Set salary
+        document.getElementById('set-salary').addEventListener('click', function() {
+            const salaryAmount = parseFloat(document.getElementById('salary-amount').value);
+            if (!isNaN(salaryAmount) && salaryAmount > 0) {
+                budgetData.salary = salaryAmount;
+                saveData();
+                document.getElementById('salary-amount').value = '';
+            } else {
+                alert('Please enter a valid salary amount.');
+            }
+        });
+
+        // Add expense
+        document.getElementById('add-expense').addEventListener('click', function() {
+            const category = document.getElementById('expense-category').value;
+            const amount = parseFloat(document.getElementById('expense-amount').value);
+            const date = document.getElementById('expense-date').value || new Date().toISOString().split('T')[0];
+            
+            if (!isNaN(amount) && amount > 0) {
+                budgetData.expenses.push({
+                    category,
+                    amount,
+                    date,
+                    id: Date.now() // unique ID
+                });
+                saveData();
+                document.getElementById('expense-amount').value = '';
+            } else {
+                alert('Please enter a valid expense amount.');
+            }
+        });
+
+        // Add goal
+        document.getElementById('add-goal').addEventListener('click', function() {
+            const name = document.getElementById('goal-name').value;
+            const target = parseFloat(document.getElementById('goal-target').value);
+            const deposit = parseFloat(document.getElementById('goal-deposit').value) || 0;
+            
+            if (name && !isNaN(target) && target > 0) {
+                budgetData.goals.push({
+                    name,
+                    target,
+                    current: deposit,
+                    id: Date.now() // unique ID
+                });
+                saveData();
+                document.getElementById('goal-name').value = '';
+                document.getElementById('goal-target').value = '';
+                document.getElementById('goal-deposit').value = '';
+            } else {
+                alert('Please enter a valid goal name and target amount.');
+            }
+        });
+
+        // Add deposit to goal
+        function addDeposit(goalId, amount) {
+            const goal = budgetData.goals.find(g => g.id === goalId);
+            if (goal && !isNaN(amount) && amount > 0) {
+                goal.current += amount;
+                if (goal.current > goal.target) goal.current = goal.target;
+                saveData();
+            }
+        }
+
+        // Delete goal
+        function deleteGoal(goalId) {
+            budgetData.goals = budgetData.goals.filter(g => g.id !== goalId);
+            saveData();
+        }
+
+        // Delete expense
+        function deleteExpense(expenseId) {
+            budgetData.expenses = budgetData.expenses.filter(e => e.id !== expenseId);
+            saveData();
+        }
+
+        // Update UI with current data
+        function updateUI() {
+            // Update salary display
+            document.getElementById('total-salary').textContent = `₱${budgetData.salary.toFixed(2)}`;
+            
+            // Calculate expenses
+            const totalExpenses = budgetData.expenses.reduce((sum, expense) => sum + expense.amount, 0);
+            document.getElementById('total-expenses').textContent = `₱${totalExpenses.toFixed(2)}`;
+            
+            // Calculate remaining budget
+            const remaining = budgetData.salary - totalExpenses;
+            document.getElementById('remaining-budget').textContent = `₱${remaining.toFixed(2)}`;
+            
+            // Calculate total saved
+            const savingsExpenses = budgetData.expenses
+                .filter(e => e.category === 'savings')
+                .reduce((sum, expense) => sum + expense.amount, 0);
+                
+            const goalsSaved = budgetData.goals.reduce((sum, goal) => sum + goal.current, 0);
+            const totalSaved = savingsExpenses + goalsSaved;
+            document.getElementById('total-saved').textContent = `₱${totalSaved.toFixed(2)}`;
+            
+            // Update expense list
+            const expenseList = document.getElementById('expense-list');
+            expenseList.innerHTML = '';
+            
+            // Show only recent 5 expenses
+            const recentExpenses = [...budgetData.expenses]
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 5);
+                
+            recentExpenses.forEach(expense => {
+                const li = document.createElement('li');
+                li.className = 'expense-item';
+                
+                const categoryEmoji = {
+                    'food': '🍔',
+                    'pamasahe': '🚌',
+                    'bills': '💡',
+                    'luho': '💄',
+                    'savings': '💰'
+                }[expense.category];
+                
+                li.innerHTML = `
+                    <div class="expense-category">
+                        <span>${categoryEmoji}</span>
+                        <span>${expense.category.charAt(0).toUpperCase() + expense.category.slice(1)}</span>
+                    </div>
+                    <div>₱${expense.amount.toFixed(2)}</div>
+                    <div>${new Date(expense.date).toLocaleDateString()}</div>
+                    <button onclick="deleteExpense(${expense.id})">Delete</button>
+                `;
+                expenseList.appendChild(li);
+            });
+            
+            // Update chart
+            updateChart();
+            
+            // Update goals
+            updateGoals();
+        }
+
+        // Update the chart
+        function updateChart() {
+            const ctx = document.getElementById('expense-chart').getContext('2d');
+            
+            // Calculate totals by category
+            const categories = ['food', 'pamasahe', 'bills', 'luho', 'savings'];
+            const categoryTotals = {};
+            
+            categories.forEach(category => {
+                categoryTotals[category] = budgetData.expenses
+                    .filter(e => e.category === category)
+                    .reduce((sum, expense) => sum + expense.amount, 0);
+            });
+            
+            // If chart already exists, destroy it
+            if (expenseChart) {
+                expenseChart.destroy();
+            }
+            
+            // Create new chart
+            expenseChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Food', 'Pamasahe', 'Bills', 'Luho', 'Savings'],
+                    datasets: [{
+                        data: [
+                            categoryTotals.food,
+                            categoryTotals.pamasahe,
+                            categoryTotals.bills,
+                            categoryTotals.luho,
+                            categoryTotals.savings
+                        ],
+                        backgroundColor: [
+                            '#FF9AA2', '#FFB7B2', '#FFDAC1', '#E2F0CB', '#B5EAD7'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    size: 12
+                                },
+                                padding: 15
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update goals display
+        function updateGoals() {
+            const goalsContainer = document.getElementById('goals-container');
+            goalsContainer.innerHTML = '';
+            
+            if (budgetData.goals.length === 0) {
+                goalsContainer.innerHTML = '<p>No savings goals yet. Add one above!</p>';
+                return;
+            }
+            
+            budgetData.goals.forEach(goal => {
+                const progress = (goal.current / goal.target) * 100;
+                const goalElement = document.createElement('div');
+                goalElement.className = 'goal-item';
+                
+                goalElement.innerHTML = `
+                    <div class="goal-header">
+                        <h3>${goal.name}</h3>
+                        <span>₱${goal.current.toFixed(2)} / ₱${goal.target.toFixed(2)}</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progress}%"></div>
+                    </div>
+                    <div class="goal-details">
+                        <span>${progress.toFixed(0)}%</span>
+                        <span>₱${(goal.target - goal.current).toFixed(2)} to go</span>
+                    </div>
+                    <div class="goal-actions">
+                        <input type="number" id="deposit-${goal.id}" placeholder="Deposit amount">
+                        <button onclick="addDeposit(${goal.id}, parseFloat(document.getElementById('deposit-${goal.id}').value))">Add Deposit</button>
+                        <button onclick="deleteGoal(${goal.id})" style="background-color: #ff6b6b;">Delete</button>
+                    </div>
+                `;
+                
+                goalsContainer.appendChild(goalElement);
+            });
+        }
+
+        // Initialize the app
+        function initApp() {
+            showRandomQuote();
+            loadData();
+        }
+
+        // Run the app when page loads
+        window.onload = initApp;
+    </script>
+</body>
+</html>
