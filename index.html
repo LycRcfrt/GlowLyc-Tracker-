@@ -203,17 +203,15 @@
         }
 
         .goal-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 12px;
-        }
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap; /* allows wrapping if needed */
+}
 
-        .goal-actions button {
-            flex: 1;
-            padding: 8px;
-            font-size: 0.9rem;
-        }
-
+.goal-actions button {
+    flex: 1 1 100%;  /* full width buttons on mobile */
+}
         .tabs {
             display: flex;
             margin-bottom: 16px;
